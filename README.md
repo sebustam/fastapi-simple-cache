@@ -50,6 +50,9 @@ def root(request: Request):  # Add a Request typed parameter
     return {"datetime": datetime.utcnow()}
 ```
 
+Check [here](examples/) for FastAPI application examples with
+different [backends](#backends) and [features](#features).
+
 ## Installation
 
 The installation depends on the backend.
