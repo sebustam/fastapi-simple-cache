@@ -20,6 +20,7 @@ a [FastAPI `Response`](https://fastapi.tiangolo.com/advanced/response-directly/)
   - [Firestore](#firestore)
 - [Features](#features)
   - [Namespaces](#namespaces)
+  - [Multi backends](#multi-backends)
   - [Valid status codes](#valid-status-codes)
 - [License](#license)
 
@@ -66,7 +67,10 @@ The `InMemoryBackend` class implements an in-memory backend.
 ```python
 from fastapi_simple_cache.backends.inmemory import InMemoryBackend
 
-backend = InMemoryBackend()
+@app.on_event("startup")
+async def startup():
+    backend = InMemoryBackend()
+    FastAPISimpleCache.init(backend=backend)
 ```
 
 ### Redis
@@ -76,8 +80,11 @@ The `RedisBackend` class implements a Redis backend.
 ```python
 from redis.asyncio import ConnectionPool, client
 
-pool = ConnectionPool.from_url(url="redis://localhost:6379")
-backend = RedisBackend(redis=client.Redis(connection_pool=pool))
+@app.on_event("startup")
+async def startup():
+    pool = ConnectionPool.from_url(url="redis://localhost:6379")
+    backend = RedisBackend(redis=client.Redis(connection_pool=pool))
+    FastAPISimpleCache.init(backend=backend)
 ```
 
 ### Firestore
@@ -85,11 +92,17 @@ backend = RedisBackend(redis=client.Redis(connection_pool=pool))
 The `FirestoreBackend` class implements a Google Firestore backend.
 
 ```python
-cred = credentials.ApplicationDefault()
-firebase_admin.initialize_app(cred, {"projectId": "gcp_project"})
-db = firestore.client()
-collection = db.collection("cache_collection")
-backend = FirestoreBackend(collection=collection)
+import firebase_admin
+from firebase_admin import firestore, credentials
+
+@app.on_event("startup")
+async def startup():
+    cred = credentials.ApplicationDefault()
+    firebase_admin.initialize_app(cred, {"projectId": "gcp_project"})
+    db = firestore.client()
+    collection = db.collection("cache_collection")
+    backend = FirestoreBackend(collection=collection)
+    FastAPISimpleCache.init(backend=backend)
 ```
 
 ## Features
@@ -107,6 +120,27 @@ async def startup():
     FastAPISimpleCache.init(
         backend=backend,
         namespace="my-app"
+    )
+    pass
+```
+
+### Multi backends
+
+Use more than one backend to cache responses with the `backend` parameter
+on cache initialization with `FastAPISimpleCache.init`. This feature is
+useful if you want to check an in-memory cache before an external cache.
+
+```python
+from fastapi_simple_cache.backends.inmemory import InMemoryBackend
+from fastapi_simple_cache.backends.redis import RedisBackend
+
+inmem_backend = InMemoryBackend()
+redis_backend = RedisBackend(...)
+
+@app.on_event("startup")
+async def startup():
+    FastAPISimpleCache.init(
+        backend=[inmem_backend, redis_backend]
     )
     pass
 ```
