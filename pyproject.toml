@@ -1,0 +1,46 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "fastapi-simple-cache"
+authors = [{name = "Sebastián Bustamante", email = "s.bustamante.f@pm.me"}]
+readme = "README.md"
+requires-python = ">=3.7"
+license = {file = "LICENSE"}
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Framework :: FastAPI",
+]
+dynamic = ["version", "description"]
+dependencies = ["fastapi"]
+
+[tool.flit.module]
+name = "fastapi_simple_cache"
+
+[project.urls]
+Source = "https://github.com/sebustam/fastapi-simple-cache"
+
+[project.optional-dependencies]
+all = [
+    "firebase-admin",
+    "redis"
+]
+firestore = ["firebase-admin"]
+redis = ["redis"]
+dev = [
+    "pre-commit",
+    "uvicorn",
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+    "firebase-admin",
+    "redis"
+]
