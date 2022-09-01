@@ -22,6 +22,7 @@ a [FastAPI `Response`](https://fastapi.tiangolo.com/advanced/response-directly/)
   - [Namespaces](#namespaces)
   - [Multi backends](#multi-backends)
   - [Valid status codes](#valid-status-codes)
+  - [No cache](#no-cache)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -115,14 +116,14 @@ async def startup():
 
 ### Namespaces
 
-You can add the parameter `namespace` on cache initialization
-with `FastAPISimpleCache.init` to modify the storage keys. Use this feature
-if you need to share same cache environment with other applications but with
-different keys.
+You can add the parameter `namespace` on cache initialization to modify
+the storage keys. Use this feature if you need to share same cache
+environment with other applications but with different keys.
 
 ```python
 @app.on_event("startup")
 async def startup():
+    backend = InMemoryBackend()
     FastAPISimpleCache.init(
         backend=backend,
         namespace="my-app"
@@ -133,18 +134,17 @@ async def startup():
 ### Multi backends
 
 Use more than one backend to cache responses with the `backend` parameter
-on cache initialization with `FastAPISimpleCache.init`. This feature is
-useful if you want to check an in-memory cache before an external cache.
+on cache initialization. This feature is useful if you want to check an
+in-memory cache before an external cache.
 
 ```python
 from fastapi_simple_cache.backends.inmemory import InMemoryBackend
 from fastapi_simple_cache.backends.redis import RedisBackend
 
-inmem_backend = InMemoryBackend()
-redis_backend = RedisBackend(...)
-
 @app.on_event("startup")
 async def startup():
+    inmem_backend = InMemoryBackend()
+    redis_backend = RedisBackend(...)
     FastAPISimpleCache.init(
         backend=[inmem_backend, redis_backend]
     )
@@ -163,8 +163,15 @@ def root(request: Request):
     return {"datetime": datetime.utcnow()}
 ```
 
+### No cache
+
+Avoid storing a request/response by adding the header
+`cache-control: no-cache` to the request. This works both for the client
+and the server.
+
 ## License
 
-FastAPI Fire Cache is released under the GNU General Public License v3.0 or later,
-see [here](https://choosealicense.com/licenses/gpl-3.0/) for a description of this
-license, or see the [LICENSE](./LICENSE) file for the full text.
+FastAPI Fire Cache is released under the GNU General Public License v3.0 or
+later, see [here](https://choosealicense.com/licenses/gpl-3.0/) for a
+description of this license, or see the [LICENSE](./LICENSE) file for
+the full text.
