@@ -7,7 +7,7 @@ on:
     branches:
     - main
 jobs:
-  run:
+  coverage:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,6 +22,11 @@ jobs:
           pip install flit
           flit install --deps=all --symlink
       - name: Run tests and collect coverage
-        run: pytest --cov fastapi_simple_cache --log-level=DEBUG
+        run: |
+          pytest \
+            --cov=fastapi_simple_cache tests \
+            --log-level=DEBUG \
+            --cov-fail-under=100
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

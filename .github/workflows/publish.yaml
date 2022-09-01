@@ -4,7 +4,7 @@ on:
     types:
       - created
 jobs:
-  run:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
