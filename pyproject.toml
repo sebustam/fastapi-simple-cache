@@ -6,14 +6,13 @@ build-backend = "flit_core.buildapi"
 name = "fastapi-simple-cache"
 authors = [{name = "Sebastián Bustamante", email = "s.bustamante.f@pm.me"}]
 readme = "README.md"
-requires-python = ">=3.6.1"
+requires-python = ">=3.7"
 license = {file = "LICENSE"}
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -36,13 +35,6 @@ all = [
 ]
 firestore = ["firebase-admin"]
 redis = ["redis"]
-test = [
-    "pytest",
-    "pytest-cov",
-    "pytest-asyncio",
-    "firebase-admin",
-    "redis"
-]
 dev = [
     "pre-commit",
     "uvicorn",
