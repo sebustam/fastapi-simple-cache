@@ -79,6 +79,8 @@ The `RedisBackend` class implements a Redis backend.
 
 ```python
 from redis.asyncio import ConnectionPool, client
+from fastapi_simple_cache.backends.redis import RedisBackend
+
 
 @app.on_event("startup")
 async def startup():
@@ -94,6 +96,7 @@ The `FirestoreBackend` class implements a Google Firestore backend.
 ```python
 import firebase_admin
 from firebase_admin import firestore, credentials
+from fastapi_simple_cache.backends.firestore import FirestoreBackend
 
 @app.on_event("startup")
 async def startup():
