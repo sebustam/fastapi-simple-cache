@@ -1,7 +1,6 @@
 # FastAPI Simple Cache
 
 [![Tests](https://github.com/sebustam/fastapi-simple-cache/actions/workflows/tests.yaml/badge.svg)](https://github.com/sebustam/fastapi-simple-cache/actions/workflows/tests.yaml)
-[![Known Vulnerabilities](https://snyk-widget.herokuapp.com/badge/pip/fastapi-simple-cache/badge.svg)](https://snyk.io/test/github/sebustam/fastapi-simple-cache)
 [![Coverage](https://codecov.io/gh/sebustam/fastapi-simple-cache/branch/main/graph/badge.svg?token=6JPFPOQWX2)](https://codecov.io/gh/sebustam/fastapi-simple-cache)
 [![Package version](https://img.shields.io/pypi/v/fastapi-simple-cache?color=%2334D058)](https://pypi.org/project/fastapi-simple-cache)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/fastapi-simple-cache.svg?color=%2334D058)](https://pypi.org/project/fastapi-simple-cache)
@@ -15,8 +14,13 @@ a [FastAPI `Response`](https://fastapi.tiangolo.com/advanced/response-directly/)
 
 - [Quick start](#quick-start)
 - [Installation](#installation)
+- [Backends](#backends)
+  - [In memory](#in-memory)
+  - [Redis](#redis)
+  - [Firestore](#firestore)
 - [Features](#features)
   - [Namespaces](#namespaces)
+  - [Valid status codes](#valid-status-codes)
 - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -53,6 +57,41 @@ The installation depends on the backend.
 - Redis: `pip install "fastapi-simple-cache[redis]"`
 - Firestore: `pip install "fastapi-simple-cache[firestore]"`
 
+## Backends
+
+### In memory
+
+The `InMemoryBackend` class implements an in-memory backend.
+
+```python
+from fastapi_simple_cache.backends.inmemory import InMemoryBackend
+
+backend = InMemoryBackend()
+```
+
+### Redis
+
+The `RedisBackend` class implements a Redis backend.
+
+```python
+from redis.asyncio import ConnectionPool, client
+
+pool = ConnectionPool.from_url(url="redis://localhost:6379")
+backend = RedisBackend(redis=client.Redis(connection_pool=pool))
+```
+
+### Firestore
+
+The `FirestoreBackend` class implements a Google Firestore backend.
+
+```python
+cred = credentials.ApplicationDefault()
+firebase_admin.initialize_app(cred, {"projectId": "gcp_project"})
+db = firestore.client()
+collection = db.collection("cache_collection")
+backend = FirestoreBackend(collection=collection)
+```
+
 ## Features
 
 ### Namespaces
@@ -70,6 +109,18 @@ async def startup():
         namespace="my-app"
     )
     pass
+```
+
+### Valid status codes
+
+Set valid status codes to cache responses in the `@cache` parameter
+`status_codes` (defaults to `[200]`).
+
+```python
+@app.get("/")
+@cache(expire=3600, status_codes=[200, 201])
+def root(request: Request):
+    return {"datetime": datetime.utcnow()}
 ```
 
 ## License

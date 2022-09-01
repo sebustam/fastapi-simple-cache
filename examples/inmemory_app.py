@@ -11,7 +11,7 @@ app = FastAPI()
 async def startup():
     backend = InMemoryBackend()
     FastAPISimpleCache.init(backend=backend)
-    pass
+
 
 @app.get("/")
 @cache(expire=10)

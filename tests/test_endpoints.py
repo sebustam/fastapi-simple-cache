@@ -1,5 +1,6 @@
 import pytest
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 
@@ -16,6 +17,22 @@ def backend():
     backend = InMemoryBackend()
     FastAPISimpleCache.reset()
     FastAPISimpleCache.init(backend=backend)
+
+
+def test_status_code(backend, caplog):
+    @app.get("/status_code")
+    @cache(expire=1, status_codes=[200, 201])
+    def status_code(status_code: int, request: Request):
+        return JSONResponse(
+            content={"status_code": status_code}, status_code=status_code
+        )
+
+    response = client.get("/status_code", params={"status_code": 404})
+    assert caplog.records[0].message == "Not cached: status code 404"
+    assert response.json().get("status_code") == 404
+    response = client.get("/status_code", params={"status_code": 201})
+    assert response.json().get("status_code") == 201
+    assert response.headers.get("age") == "0"
 
 
 def test_sync_get(backend):

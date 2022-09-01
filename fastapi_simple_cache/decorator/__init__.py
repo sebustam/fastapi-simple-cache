@@ -63,9 +63,12 @@ def cache(
                 FastAPISimpleCache.set(key, res, expire)
                 if no_cache:
                     res.headers["cache-control"] = "no-cache"
+                    logger.warning("Not cached: 'no-cache' directive")
                 else:
                     res.headers["cache-control"] = f"max-age={expire}"
                     res.headers["age"] = "0"
+            else:
+                logger.warning(f"Not cached: status code {res.status_code}")
             return res
 
         return inner

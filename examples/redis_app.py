@@ -13,7 +13,7 @@ async def startup():
     pool = ConnectionPool.from_url(url="redis://localhost:6379")
     backend = RedisBackend(redis=client.Redis(connection_pool=pool))
     FastAPISimpleCache.init(backend=backend)
-    pass
+
 
 @app.get("/")
 @cache(expire=10)
