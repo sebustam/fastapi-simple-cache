@@ -37,14 +37,15 @@ app = FastAPI()
 # Initialize in startup event
 from fastapi_simple_cache import FastAPISimpleCache
 from fastapi_simple_cache.backends.inmemory import InMemoryBackend
+
 @app.on_event("startup")
 async def startup():
     backend = InMemoryBackend()
     FastAPISimpleCache.init(backend=backend)
-    pass
 
 # Use the @cache decorator
 from fastapi_simple_cache.decorator import cache
+
 @app.get("/")
 @cache(expire=3600)  # Set expiration in seconds
 def root(request: Request):  # Add a Request typed parameter
@@ -84,7 +85,6 @@ The `RedisBackend` class implements a Redis backend.
 ```python
 from redis.asyncio import ConnectionPool, client
 from fastapi_simple_cache.backends.redis import RedisBackend
-
 
 @app.on_event("startup")
 async def startup():
@@ -128,7 +128,6 @@ async def startup():
         backend=backend,
         namespace="my-app"
     )
-    pass
 ```
 
 ### Multi backends
@@ -148,7 +147,6 @@ async def startup():
     FastAPISimpleCache.init(
         backend=[inmem_backend, redis_backend]
     )
-    pass
 ```
 
 ### Valid status codes

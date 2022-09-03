@@ -43,6 +43,6 @@ def test_max_age(backend):
     assert response.headers.get("age") == "0"
 
 
-def test_no_cache(backend):
+def test_no_cache(backend, caplog):
     response = client.get("/", headers={"cache-control": "no-cache"})
     assert response.headers.get("cache-control") == "no-cache"

@@ -1,6 +1,6 @@
 """FastAPI Simple Cache"""
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 import asyncio
 import logging
@@ -22,6 +22,12 @@ class FastAPISimpleCache:
         backend: Union[Backend, List[Backend]],
         namespace: Optional[str] = None,
     ) -> None:
+        """Cache initialization
+
+        Args:
+            backend (Union[Backend, List[Backend]]): Backend(s) for cache.
+            namespace (Optional[str], optional): Key building modificator. Defaults to None.
+        """
         if isinstance(backend, Backend):
             backend = [backend]
         cls.backends = backend
@@ -33,6 +39,14 @@ class FastAPISimpleCache:
         cls,
         key: str,
     ) -> Tuple[Optional[Response], Optional[int]]:
+        """Get cached response from request key
+
+        Args:
+            key (str): Request key.
+
+        Returns:
+            Tuple[Optional[Response], Optional[int]]: Response and TTL.
+        """
         cls._check_init()
         for backend in cls.backends:
             response, ttl = await backend.get(key)
@@ -47,6 +61,13 @@ class FastAPISimpleCache:
         response: Response,
         expire: int,
     ) -> None:
+        """Set response key/response value pair in cache
+
+        Args:
+            key (str): Request key.
+            response (Response): Response.
+            expire (int): Expiration time in seconds.
+        """
         cls._check_init()
         loop = asyncio.get_running_loop()
         for backend in cls.backends:
@@ -55,6 +76,11 @@ class FastAPISimpleCache:
 
     @classmethod
     def _check_init(cls):
+        """Check cache initialization
+
+        Raises:
+            Exception: Raised when no backend has been set.
+        """
         if cls.backends is None:
             raise Exception("You must call init first")
         pass
