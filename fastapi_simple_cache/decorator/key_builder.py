@@ -13,7 +13,7 @@ def build_key(
         "__module__": func.__module__,
         "__name__": func.__name__,
         "__args__": args,
-        "__kwargs__": jsonable_encoder(kwargs),
+        "__kwargs__": kwargs,
     }
     str2hash = json.dumps(jsonable_encoder(key_dict))
     key = hashlib.sha256(str2hash.encode())

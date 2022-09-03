@@ -16,6 +16,13 @@ def cache(
     expire: int = 3600,
     status_codes: List[int] = [200],
 ):
+    """Cache responses from endpoint
+
+    Args:
+        expire (int, optional): Expiration time in seconds. Defaults to 3600.
+        status_codes (List[int], optional): Valid status codes to cache responses. Defaults to [200].
+    """
+
     def wrapper(func):
 
         anno = func.__annotations__
@@ -60,11 +67,11 @@ def cache(
             if not isinstance(res, Response):
                 res = JSONResponse(content=jsonable_encoder(res))
             if res.status_code in status_codes:
-                FastAPISimpleCache.set(key, res, expire)
                 if no_cache:
                     res.headers["cache-control"] = "no-cache"
                     logger.warning("Not cached: 'no-cache' directive")
                 else:
+                    FastAPISimpleCache.set(key, res, expire)
                     res.headers["cache-control"] = f"max-age={expire}"
                     res.headers["age"] = "0"
             else:
