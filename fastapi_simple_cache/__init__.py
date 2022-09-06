@@ -1,6 +1,6 @@
 """FastAPI Simple Cache"""
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 import asyncio
 import logging
@@ -75,6 +75,13 @@ class FastAPISimpleCache:
         pass
 
     @classmethod
+    def reset(cls):
+        """Resets FastAPISimpleCache"""
+        cls.backends = None
+        cls.namespace = None
+        pass
+
+    @classmethod
     def _check_init(cls):
         """Check cache initialization
 
@@ -83,10 +90,4 @@ class FastAPISimpleCache:
         """
         if cls.backends is None:
             raise Exception("You must call init first")
-        pass
-
-    @classmethod
-    def reset(cls):
-        cls.backends = None
-        cls.namespace = None
         pass
