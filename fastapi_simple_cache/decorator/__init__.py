@@ -38,7 +38,9 @@ def cache(
             nonlocal request_key
             # Get incoming request
             request = kwargs.get(request_key)
-            no_cache = "no-cache" in request.headers.get("cache-control", "")
+            no_cache = (request.headers is not None) and (
+                "no-cache" in request.headers.get("cache-control", "")
+            )
             # Get info from request
             query_params = dict(request.query_params)
             path_params = dict(request.path_params)

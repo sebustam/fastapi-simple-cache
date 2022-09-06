@@ -12,14 +12,18 @@ app = FastAPI()
 client = TestClient(app)
 
 
+class RequestTest(BaseModel):
+    message: str
+
+
 @pytest.fixture
-def backend():
-    backend = InMemoryBackend()
-    FastAPISimpleCache.reset()
-    FastAPISimpleCache.init(backend=backend)
+def init_backend():
+    FastAPISimpleCache.init(backend=InMemoryBackend())
 
 
-def test_status_code(backend, caplog):
+def test_status_code(init_backend, caplog):
+    FastAPISimpleCache.init(backend=InMemoryBackend())
+
     @app.get("/status_code")
     @cache(expire=1, status_codes=[200, 201])
     def status_code(status_code: int, request: Request):
@@ -35,7 +39,7 @@ def test_status_code(backend, caplog):
     assert response.headers.get("age") == "0"
 
 
-def test_sync_get(backend):
+def test_sync_get(init_backend):
     @app.get("/sync_get")
     @cache(expire=1)
     def sync_get(message: str, request: Request):
@@ -45,7 +49,7 @@ def test_sync_get(backend):
     assert response.json().get("message") == "sync_get"
 
 
-def test_async_get(backend):
+def test_async_get(init_backend):
     @app.get("/async_get")
     @cache(expire=1)
     async def async_get(message: str, request: Request):
@@ -55,11 +59,7 @@ def test_async_get(backend):
     assert response.json().get("message") == "async_get"
 
 
-class RequestTest(BaseModel):
-    message: str
-
-
-def test_sync_post(backend):
+def test_sync_post(init_backend):
     @app.post("/sync_post")
     @cache(expire=1)
     def sync_post(message: str, request: Request):
@@ -69,7 +69,7 @@ def test_sync_post(backend):
     assert response.json().get("message") == "sync_post"
 
 
-def test_async_post(backend):
+def test_async_post(init_backend):
     @app.post("/async_post")
     @cache(expire=1)
     async def async_post(message: RequestTest, request: Request):

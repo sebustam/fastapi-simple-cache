@@ -1,10 +1,9 @@
-import pytest
 import time
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 
-from fastapi_simple_cache.decorator import cache
 from fastapi_simple_cache import FastAPISimpleCache
+from fastapi_simple_cache.decorator import cache
 from fastapi_simple_cache.backends.inmemory import InMemoryBackend
 
 app = FastAPI()
@@ -17,14 +16,8 @@ def root(request: Request):
     return {"time": time.time()}
 
 
-@pytest.fixture
-def backend():
-    backend = InMemoryBackend()
-    FastAPISimpleCache.reset()
-    FastAPISimpleCache.init(backend=backend)
-
-
-def test_max_age(backend):
+def test_max_age():
+    FastAPISimpleCache.init(backend=InMemoryBackend())
     response = client.get("/")
     first_time = response.json().get("time")
     assert response.headers.get("cache-control") == "max-age=2"
@@ -43,6 +36,7 @@ def test_max_age(backend):
     assert response.headers.get("age") == "0"
 
 
-def test_no_cache(backend, caplog):
+def test_no_cache():
+    FastAPISimpleCache.init(backend=InMemoryBackend())
     response = client.get("/", headers={"cache-control": "no-cache"})
     assert response.headers.get("cache-control") == "no-cache"

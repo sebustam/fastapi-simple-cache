@@ -3,6 +3,7 @@ import re
 import time
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
+
 from fastapi_simple_cache import FastAPISimpleCache
 from fastapi_simple_cache.decorator import cache
 from fastapi_simple_cache.backends.inmemory import InMemoryBackend
@@ -22,29 +23,16 @@ def root(request: Request):
     return {"epoch": time.time()}
 
 
-@pytest.fixture
-def firestore_backend():
-    backend = FirestoreBackend(collection=CollectionReference())
-    FastAPISimpleCache.reset()
-    FastAPISimpleCache.init(backend=backend)
-
-
-@pytest.fixture
-def redis_backend():
-    backend = RedisBackend(redis=Redis())
-    FastAPISimpleCache.reset()
-    FastAPISimpleCache.init(backend=backend)
-
-
-@pytest.fixture
-def multi_backend():
-    backend_inmem = InMemoryBackend()
-    backend_redis = RedisBackend(redis=Redis())
-    FastAPISimpleCache.reset()
-    FastAPISimpleCache.init(backend=[backend_inmem, backend_redis])
-
-
-def test_firestore(firestore_backend):
+@pytest.mark.parametrize(
+    "backend",
+    [
+        InMemoryBackend(),
+        RedisBackend(Redis()),
+        FirestoreBackend(CollectionReference()),
+    ],
+)
+def test_single_backend(backend):
+    FastAPISimpleCache.init(backend)
     response = client.post("/")
     epoch = response.json().get("epoch")
     assert response.headers.get("age") == "0"
@@ -58,35 +46,30 @@ def test_firestore(firestore_backend):
     assert response.headers.get("age") == "0"
 
 
-def test_redis(redis_backend):
+@pytest.mark.parametrize(
+    "backend",
+    [
+        RedisBackend(Redis()),
+        FirestoreBackend(CollectionReference()),
+    ],
+)
+def test_multi_backend(backend, caplog):
+    FastAPISimpleCache.init(backend=[InMemoryBackend(), backend])
+    backend_name = type(backend).__name__
     response = client.post("/")
     epoch = response.json().get("epoch")
     assert response.headers.get("age") == "0"
+    assert re.match("Set .*? to InMemoryBackend", caplog.records[0].message)
+    assert re.match(f"Set .*? to {backend_name}", caplog.records[1].message)
     time.sleep(1)
     response = client.post("/")
     assert response.json().get("epoch") == epoch
     assert response.headers.get("age") == "1"
+    assert re.match("Get .*? from InMemoryBackend", caplog.records[2].message)
     time.sleep(1)
     response = client.post("/")
     assert response.json().get("epoch") != epoch
     assert response.headers.get("age") == "0"
-
-
-def test_multi_backend(multi_backend, caplog):
-    response = client.post("/")
-    epoch = response.json().get("epoch")
-    assert response.headers.get("age") == "0"
-    time.sleep(1)
-    response = client.post("/")
-    assert response.json().get("epoch") == epoch
-    assert response.headers.get("age") == "1"
-    time.sleep(1)
-    response = client.post("/")
-    assert response.json().get("epoch") != epoch
-    assert response.headers.get("age") == "0"
-    assert re.match(r"Set .*? to InMemoryBackend", caplog.records[0].message)
-    assert re.match(r"Set .*? to RedisBackend", caplog.records[1].message)
-    assert re.match(r"Get .*? from InMemoryBackend", caplog.records[2].message)
-    assert re.match(r"Exp .*? from InMemoryBackend", caplog.records[3].message)
-    assert re.match(r"Set .*? to InMemoryBackend", caplog.records[4].message)
-    assert re.match(r"Set .*? to RedisBackend", caplog.records[5].message)
+    assert re.match("Exp .*? from InMemoryBackend", caplog.records[3].message)
+    assert re.match("Set .*? to InMemoryBackend", caplog.records[4].message)
+    assert re.match(f"Set .*? to {backend_name}", caplog.records[5].message)
